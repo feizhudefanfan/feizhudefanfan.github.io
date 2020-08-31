@@ -25,15 +25,20 @@
 
 
 - 编码流程
-![编码流程](https://upload-images.jianshu.io/upload_images/2262256-6636249a310bea3f.png?imageMogr2/auto-orient/strip|imageView2/2/w/569/format/webp)
+![编码流程](https://upload-images.jianshu.io/upload_images/2262256-6636249a310bea3f.png?imageMogr2/auto-orient/strip|imageView2/2/w/569/format/webp “编码流程”)
 1. 编码步骤：
   (1) av_register_all()：注册FFmpeg 的H265编码器。调用了avcodec_register_all()，avcodec_register_all()注册了H265编码器有关的组件：硬件加速器，编码器，Parser，Bitstream Filter等
+  
   (2) avformat_alloc_output_context2()：初始化输出码流的AVFormatContext，获取输出文件的编码格式；
+  
   (3) avio_open()：打开输出文件，调用了2个函数：ffurl_open()和ffio_fdopen()。其中ffurl_open()用于初始化URLContext，ffio_fdopen()用于根据URLContext初始化AVIOContext。URLContext中包含的URLProtocol完成了具体的协议读写等工作。AVIOContext则是在URLContext的读写函数外面加上了一层“包装”；
+  
   (4) av_new_stream()：创建输出码流的AVStream结构体，为输出文件设置编码所需要的参数和格式；
+  
   (5) avcodec_find_encoder()：通过 codec_id查找H265编码器
+  
 ```
-`
+
 HEVC解码器对应的AVCodec结构体ff_hevc_decoder：
 AVCodec ff_hevc_decoder = {
     .name                  = "hevc",
@@ -75,15 +80,22 @@ AVCodec ff_hevc_decoder = {
                                HWACCEL_VIDEOTOOLBOX(hevc),
 #endif
                                NULL
-`                               
+                             
 ```
   (6) avcodec_open2()：打开编码器。调用AVCodec的libx265_encode_init()初始化H265解码器 avcodec_open2()函数；`avcodec_open2() -> libx265_encode_init() -> x265_param_alloc(), x265_param_default_preset(), x265_encoder_open()`
+  
   (7) avformat_write_header()：写入编码的H265码流的文件头；
+  
   (8) avcodec_encode_video2()：编码一帧视频。将AVFrame（存储YUV像素数据）编码为AVPacket（存储H265格式的码流数据）。调用H265编码器的libx265_encode_frame()函数；`avcodec_encode_video2() -> libx265_encode_frame() -> x265_encoder_encode()`
+  
   (9) av_write_frame()：将编码后的视频码流写入文件中；
+  
   (10) flush_encoder()：输入的像素数据读取完成后调用此函数，用于输出编码器中剩余的AVPacket；
+  
   (11) av_write_trailer()：写入编码的H265码流的文件尾；
+  
   (12) close():释放 AVFrame和图片buf，关闭H265编码器，调用AVCodec的libx265_encode_close()函数 `avcodec_close() -> libx265_encode_close() -> x265_param_free(), x265_encoder_close()`
+  
 3. 示例代码：
 ```
 **
@@ -318,10 +330,7 @@ int main(int argc, char* argv[])
 `
 ```
 
-- 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
+- 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center “FFMpeg解码流程”)
 
 1. 
 
-
-
-##   
