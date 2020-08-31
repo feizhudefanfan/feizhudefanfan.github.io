@@ -25,7 +25,7 @@
 - 编码流程
 
 3. 示例代码：
-`
+```
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -194,7 +194,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
-`
+```
 
 - 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
 
