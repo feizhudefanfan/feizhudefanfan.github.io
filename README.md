@@ -1,14 +1,14 @@
-## 个人学习笔记
+# 个人学习笔记
 
 
-### Markdown的用法
+## Markdown的用法
 
 ```markdown
 高亮区域代码
-
-# Header 1    标题一
-## Header 2   标题二
-### Header 3  标题三
+```
+# 标题一    
+## 标题二  
+### 标题三
 
 - Bulleted
 - List
@@ -16,17 +16,15 @@
 1. Numbered
 2. List
 
-**Bold** and _Italic_ and `Code` text
-
+**粗体** and _斜体_ and `编码` text
+```
 [Link](url) and ![Image](src)
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+## FFmpeg的使用流程
+![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
+1. 
 
-### Jekyll Themes
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/feizhudefanfan/feizhudefanfan.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
 
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+##   
