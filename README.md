@@ -25,7 +25,7 @@
 
 
 - 编码流程
-![编码流程](https://upload-images.jianshu.io/upload_images/2262256-6636249a310bea3f.png?imageMogr2/auto-orient/strip|imageView2/2/w/569/format/webp “编码流程”)
+![编码流程](https://upload-images.jianshu.io/upload_images/2262256-6636249a310bea3f.png?imageMogr2/auto-orient/strip|imageView2/2/w/569/format/webp)
 1. 编码步骤：
   (1) av_register_all()：注册FFmpeg 的H265编码器。调用了avcodec_register_all()，avcodec_register_all()注册了H265编码器有关的组件：硬件加速器，编码器，Parser，Bitstream Filter等
   
@@ -330,7 +330,7 @@ int main(int argc, char* argv[])
 `
 ```
 
-- 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center “FFMpeg解码流程”)
+- 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
 
 1. 
 
