@@ -100,7 +100,8 @@ AVCodec ff_hevc_decoder = {
   
 3. 示例代码：
 ```c++
-/**
+`
+ /*
  * 基于FFmpeg的视频编码器
  * 功能：实现了YUV420像素数据编码为视频码流（H264，H265,MPEG2，VP8）。
  * ffmpeg编码yuv文件的命令:
@@ -324,6 +325,7 @@ int main(int argc, char* argv[])
  
 	return 0;
 }
+`
 ```
 
 - 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
@@ -345,7 +347,9 @@ int main(int argc, char* argv[])
 7. 视频解码->播放视频->得到视频像素数据
 8. 关闭解码器->解码完成
 -示例代码：
+
 ```c++
+`
 /*
  * Copyright (c) 2001 Fabrice Bellard
  *
@@ -532,6 +536,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
+`
 ```
 
 
