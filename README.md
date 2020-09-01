@@ -109,9 +109,7 @@ AVCodec ff_hevc_decoder = {
  */
  
 #include <stdio.h>
- 
 #define __STDC_CONSTANT_MACROS
- 
 #ifdef _WIN32
 //Windows
 extern "C"
@@ -133,7 +131,6 @@ extern "C"
 };
 #endif
 #endif
- 
 //H.265码流与YUV输入的帧数不同。经过观察对比其他程序后发现需要调用flush_encoder()将编码器中剩余的视频帧输出。当av_read_frame()循环退出的时候，实际上解码器中可能还包含剩余的几帧数据。
 //因此需要通过“flush_decoder”将这几帧数据输出。“flush_decoder”功能简而言之即直接调用avcodec_decode_video2()获得AVFrame，而不再向解码器传递AVPacket
 int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index){
@@ -165,7 +162,6 @@ int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index){
 	}
 	return ret;
 }
- 
 int main(int argc, char* argv[])
 {
 	AVFormatContext* pFormatCtx = NULL;
@@ -215,7 +211,6 @@ int main(int argc, char* argv[])
 	pCodecCtx->qmin = 10;最大和最小量化系数 
 	//（函数输出的延时仅仅跟max_b_frames的设置有关，想进行实时编码，将max_b_frames设置为0便没有编码延时了）
 	pCodecCtx->max_b_frames = 3;// 设置 B 帧最大的数量，B帧为视频图片空间的前后预测帧， B 帧相对于 I、P 帧来说，压缩率比较大，采用多编码 B 帧提高清晰度
- 
 	//设置编码速度
 	AVDictionary *param = 0;
 	//preset的参数调节编码速度和质量的平衡。
@@ -329,7 +324,6 @@ int main(int argc, char* argv[])
  
 	return 0;
 }
-`
 ```
 
 - 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
