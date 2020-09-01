@@ -99,16 +99,13 @@ AVCodec ff_hevc_decoder = {
   (12) close():释放 AVFrame和图片buf，关闭H265编码器，调用AVCodec的libx265_encode_close()函数 `avcodec_close() -> libx265_encode_close() -> x265_param_free(), x265_encoder_close()`
   
 3. 示例代码：
-```c++
-`
- /*
+```c++ /*
  * 基于FFmpeg的视频编码器
  * 功能：实现了YUV420像素数据编码为视频码流（H264，H265,MPEG2，VP8）。
  * ffmpeg编码yuv文件的命令:
  * H264:ffmpeg -s cif -i foreman_cif.yuv -vcodec libx264 -level 40 -profile baseline -me_method epzs -qp 23 -i_qfactor 1.0  -g 12 -refs 1 -frames 50 -r 25 output.264 
  * H265:ffmpeg -s cif -foreman_cif.yuv -vcodec libx265  -frames 100  output.265
  */
- 
 #include <stdio.h>
 #define __STDC_CONSTANT_MACROS
 #ifdef _WIN32
@@ -325,7 +322,7 @@ int main(int argc, char* argv[])
  
 	return 0;
 }
-`
+
 ```
 
 - 解码流程![FFMpeg解码流程](https://img-blog.csdnimg.cn/20190131151319528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0ZQR0FUT00=,size_16,color_FFFFFF,t_70#pic_center)
@@ -348,9 +345,7 @@ int main(int argc, char* argv[])
 8. 关闭解码器->解码完成
 -示例代码：
 
-```c++
-`
-/*
+```c++/**
  * Copyright (c) 2001 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -536,7 +531,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
-`
+
 ```
 
 
