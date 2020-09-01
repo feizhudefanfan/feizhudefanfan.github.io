@@ -84,6 +84,7 @@ AVCodec ff_hevc_decoder = {
                                NULL
                              
 ```
+
   (6) avcodec_open2()：打开编码器。调用AVCodec的libx265_encode_init()初始化H265解码器 avcodec_open2()函数；`avcodec_open2() -> libx265_encode_init() -> x265_param_alloc(), x265_param_default_preset(), x265_encoder_open()`
   
   (7) avformat_write_header()：写入编码的H265码流的文件头；
@@ -99,7 +100,10 @@ AVCodec ff_hevc_decoder = {
   (12) close():释放 AVFrame和图片buf，关闭H265编码器，调用AVCodec的libx265_encode_close()函数 `avcodec_close() -> libx265_encode_close() -> x265_param_free(), x265_encoder_close()`
   
 3. 示例代码：
-```c++ /*
+
+```c++
+
+/**
  * 基于FFmpeg的视频编码器
  * 功能：实现了YUV420像素数据编码为视频码流（H264，H265,MPEG2，VP8）。
  * ffmpeg编码yuv文件的命令:
@@ -345,7 +349,9 @@ int main(int argc, char* argv[])
 8. 关闭解码器->解码完成
 -示例代码：
 
-```c++/**
+```c++
+
+/**
  * Copyright (c) 2001 Fabrice Bellard
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
