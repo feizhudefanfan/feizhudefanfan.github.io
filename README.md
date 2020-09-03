@@ -351,192 +351,162 @@ int main(int argc, char* argv[])
 
 ```c++
 
-/**
- * Copyright (c) 2001 Fabrice Bellard
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 
-/**
- * @file
- * video decoding with libavcodec API example
- *
- * @example decode_video.c
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <iostream>
+#include <WinSock2.h>
+#include <opencv2\opencv.hpp>
+extern "C" {
 #include <libavcodec/avcodec.h>
-
-#define INBUF_SIZE 4096
-
-static void pgm_save(unsigned char *buf, int wrap, int xsize, int ysize,
-                     char *filename)
-{
-    FILE *f;
-    int i;
-
-    f = fopen(filename,"w");
-    fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
-    for (i = 0; i < ysize; i++)
-        fwrite(buf + i * wrap, 1, xsize, f);
-    fclose(f);
+#include <libavutil/imgutils.h>
+#include <libavutil/parseutils.h>
+#include <libswscale/swscale.h>
+#include <libavdevice/avdevice.h>
+#include <libavformat\avformat.h>
 }
-
-static void decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
-                   const char *filename)
-{
-    char buf[1024];
-    int ret;
-
-    ret = avcodec_send_packet(dec_ctx, pkt);
-    if (ret < 0) {
-        fprintf(stderr, "Error sending a packet for decoding\n");
-        exit(1);
-    }
-
-    while (ret >= 0) {
-        ret = avcodec_receive_frame(dec_ctx, frame);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-            return;
-        else if (ret < 0) {
-            fprintf(stderr, "Error during decoding\n");
-            exit(1);
-        }
-
-        printf("saving frame %3d\n", dec_ctx->frame_number);
-        fflush(stdout);
-
-        /* the picture is allocated by the decoder. no need to
-           free it */
-        snprintf(buf, sizeof(buf), "%s-%d", filename, dec_ctx->frame_number);
-        pgm_save(frame->data[0], frame->linesize[0],
-                 frame->width, frame->height, buf);
-    }
-}
-
+#pragma comment(lib,"ws2_32.lib")
 int main(int argc, char **argv)
 {
-    const char *filename, *outfilename;
-    const AVCodec *codec;
-    AVCodecParserContext *parser;
-    AVCodecContext *c= NULL;
-    FILE *f;
-    AVFrame *frame;
-    uint8_t inbuf[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
-    uint8_t *data;
-    size_t   data_size;
-    int ret;
-    AVPacket *pkt;
+	const AVCodec *codec;
+	AVCodecParserContext *parser;
+	SwsContext *sws;
+	AVCodecContext *c = NULL;
+	uint8_t* buffer_rgb = NULL;
+	
+	uint8_t *buffer_cace;
+	uint8_t *data;
+	size_t   data_size;
+	
+	AVPacket *pkt;
+	buffer_cace = new uint8_t[8000];
+	FILE *fs;
 
-    if (argc <= 2) {
-        fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
-        exit(0);
-    }
-    filename    = argv[1];
-    outfilename = argv[2];
 
-    pkt = av_packet_alloc();
-    if (!pkt)
-        exit(1);
+	pkt = av_packet_alloc();
+	//av_init_packet(pkt);
+	codec = avcodec_find_decoder(AV_CODEC_ID_HEVC);
+	if (!codec) {
+		fprintf(stderr, "Codec not found\n");
+		return -1;
+	}
+	parser = av_parser_init(codec->id);
+	if (!parser) {
+		fprintf(stderr, "parser not found\n");
+		return -2;
+	}
+	c = avcodec_alloc_context3(codec);
+	if (!c) {
+		fprintf(stderr, "Could not allocate video codec context\n");
+		return -2;
+	}
+	if (avcodec_open2(c, codec, NULL) < 0) {
+		fprintf(stderr, "Could not open codec\n");
+		return -4;
+	}
 
-    /* set end of buffer to 0 (this ensures that no overreading happens for damaged MPEG streams) */
-    memset(inbuf + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-    /* find the MPEG-1 video decoder */
-    codec = avcodec_find_decoder(AV_CODEC_ID_MPEG1VIDEO);
-    if (!codec) {
-        fprintf(stderr, "Codec not found\n");
-        exit(1);
-    }
+	
+	int bytes = av_image_get_buffer_size(AV_PIX_FMT_NV12, 1280, 720,1);
+	buffer_rgb = (uint8_t *)av_malloc(bytes);
+	AVFrame *pFrameNV12 = av_frame_alloc();
+	int bufferSize = av_image_get_buffer_size(AV_PIX_FMT_BGR24, 1280, 720,1);
+	AVFrame  *pFrameRGB = av_frame_alloc();
+	pFrameRGB->width = 1280;
+	pFrameRGB->height = 720;
+	pFrameRGB->format = AV_PIX_FMT_BGR24;
+	uint8_t *m_Buffer = (unsigned char *)av_malloc(bufferSize);
+	//cv::Mat img = cv::Mat::zeros(cv::Size(1280, 720), CV_8UC3);
+	av_image_fill_arrays(pFrameRGB->data, pFrameRGB->linesize, m_Buffer, AV_PIX_FMT_BGR24, 1280, 720,1);
+	sws = sws_getContext(1280, 720, AVPixelFormat::AV_PIX_FMT_YUV420P, 1280, 720, AVPixelFormat::AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL,NULL);
+	fs=fopen("6004create_frame.h265","rb");
 
-    parser = av_parser_init(codec->id);
-    if (!parser) {
-        fprintf(stderr, "parser not found\n");
-        exit(1);
-    }
 
-    c = avcodec_alloc_context3(codec);
-    if (!c) {
-        fprintf(stderr, "Could not allocate video codec context\n");
-        exit(1);
-    }
+	WSADATA mWasData;
+	SOCKET mSocket;
+	WSAStartup(MAKEWORD(2, 2), &mWasData);
+ReConnnect:
+	mSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (mSocket == INVALID_SOCKET) {
 
-    /* For some codecs, such as msmpeg4 and mpeg4, width and height
-       MUST be initialized there because this information is not
-       available in the bitstream. */
+		closesocket(mSocket);
+		goto ReConnnect;
+	}
+	int recvTimeout = 30 * 1000;  //30s接收超时时间设置
+	if (SOCKET_ERROR == setsockopt(mSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&recvTimeout, sizeof(int))) {
 
-    /* open it */
-    if (avcodec_open2(c, codec, NULL) < 0) {
-        fprintf(stderr, "Could not open codec\n");
-        exit(1);
-    }
 
-    f = fopen(filename, "rb");
-    if (!f) {
-        fprintf(stderr, "Could not open %s\n", filename);
-        exit(1);
-    }
+		closesocket(mSocket);
+		goto ReConnnect;
 
-    frame = av_frame_alloc();
-    if (!frame) {
-        fprintf(stderr, "Could not allocate video frame\n");
-        exit(1);
-    }
+	}
+	SOCKADDR_IN addr;
+	addr.sin_family = PF_INET;
+	addr.sin_port = htons(6000);
+	addr.sin_addr.S_un.S_addr = inet_addr("192.168.0.128");//点分十进制转ip地址
+	int val = ::connect(mSocket, (SOCKADDR*)&addr, sizeof(addr));
+	int ret;
+	
+	do
+	{
+		//int ret= fread((char*)buffer_cace,1,8000,fs);
+		
+		ret = ::recv(mSocket,(char*)buffer_cace,8000,0);
+		if (ret<0)
+		{
+			continue;
+		}
+		data_size = ret;
+		while (data_size>0)
+		{
+			
+			uint8_t *bufefef = buffer_cace;
+			int ret_ps = av_parser_parse2(parser, c, &pkt->data, &pkt->size,
+				(const uint8_t*)bufefef, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+		
+			if (ret_ps < 0) {
+				fprintf(stderr, "Error while parsing\n");
+				continue;
+			}
+			bufefef += ret_ps;
+			data_size -= ret_ps;
+			
+			if (pkt->size == 0)
+			{
+				break;
+			}
+			int ret_send = avcodec_send_packet(c, pkt);
+			if (ret_send<0)
+			{
+				break;
+			}
+			//memset(buffer_cace,0, data_size);
+			int got_picture = avcodec_receive_frame(c, pFrameNV12); //got_picture = 0 success, a frame was returned
+			if (got_picture<0)
+			{
+				break;
+			}
+			/*uint8_t *raw_data = (uint8_t *)pFrameNV12->data;
+			std::fstream fs("test.mp4", std::ios::out | std::ios::binary | std::ios::app);
+			fs.write((const char*)raw_data,(size_t)pFrameNV12->linesize*720);
+			fs.close();*/
+			sws_scale(sws, pFrameNV12->data, pFrameNV12->linesize, 0, pFrameNV12->height, pFrameRGB->data, pFrameRGB->linesize);
+			uint8_t *data = m_Buffer;
+			
+			cv::Mat img = cv::Mat::zeros(cv::Size(1280,720),CV_8UC3);
+			memcpy(img.data, data,1280*720*3);
+			cv::imshow("123", img);
+			cv::waitKey(1);
+			
 
-    while (!feof(f)) {
-        /* read raw data from the input file */
-        data_size = fread(inbuf, 1, INBUF_SIZE, f);
-        if (!data_size)
-            break;
+		}
+		
+	}while (ret > 0);
 
-        /* use the parser to split the data into frames */
-        data = inbuf;
-        while (data_size > 0) {
-            ret = av_parser_parse2(parser, c, &pkt->data, &pkt->size,
-                                   data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
-            if (ret < 0) {
-                fprintf(stderr, "Error while parsing\n");
-                exit(1);
-            }
-            data      += ret;
-            data_size -= ret;
+	av_frame_free(&pFrameRGB);
+	av_frame_free(&pFrameNV12);
 
-            if (pkt->size)
-                decode(c, frame, pkt, outfilename);
-        }
-    }
-
-    /* flush the decoder */
-    decode(c, frame, NULL, outfilename);
-
-    fclose(f);
-
-    av_parser_close(parser);
-    avcodec_free_context(&c);
-    av_frame_free(&frame);
-    av_packet_free(&pkt);
-
-    return 0;
+	return 0;
 }
+
 
 ```
 
